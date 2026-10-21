@@ -1,0 +1,96 @@
+{
+  "fixture_version": 1,
+  "icd_release": "2026-01",
+  "api_image": "whoicd/icd-api:2.6.0",
+  "examples": [
+    {
+      "id": "adult",
+      "label": "Example 1 — Adult",
+      "purpose": "Part I chain with a separate contributing condition in Part II.",
+      "certificate": {
+        "ICDVersion": "ICD11",
+        "AdministrativeData": {"Sex": 1, "EstimatedAge": "P62Y"},
+        "Part1": [
+          {"Conditions": [{"Text": "Acute myocardial infarction", "Code": "BA41.Z", "LinearizationURI": "http://id.who.int/icd/release/11/2026-01/mms/1334938734/unspecified", "Interval": "PT12H"}]},
+          {"Conditions": [{"Text": "Coronary atherosclerosis", "Code": "BA52.Z", "LinearizationURI": "http://id.who.int/icd/release/11/2026-01/mms/1280712786/unspecified", "Interval": "P10Y"}]}
+        ],
+        "Part2": {"Conditions": [{"Text": "Type 2 diabetes mellitus", "Code": "5A11", "LinearizationURI": "http://id.who.int/icd/release/11/2026-01/mms/119724091", "Interval": "P8Y"}]}
+      },
+      "observed": {"doris": {"reject": false, "code": "BA41.Z", "warning": null}, "codedit": {"issueIds": ""}}
+    },
+    {
+      "id": "neonatal",
+      "label": "Example 2 — Neonatal death",
+      "purpose": "Perinatal chain and known infant details; DORIS recommends manual review.",
+      "certificate": {
+        "ICDVersion": "ICD11",
+        "AdministrativeData": {"Sex": 2, "EstimatedAge": "P2D"},
+        "Part1": [
+          {"Conditions": [{"Text": "Respiratory distress syndrome of newborn", "Code": "KB23.0Z", "LinearizationURI": "http://id.who.int/icd/release/11/2026-01/mms/343716587/unspecified", "Interval": "P2D"}]},
+          {"Conditions": [{"Text": "Preterm newborn", "Code": "KA21.4Z", "LinearizationURI": "http://id.who.int/icd/release/11/2026-01/mms/1726201225/unspecified", "Interval": "P2D"}]}
+        ],
+        "FetalOrInfantDeath": {"Stillborn": 0, "MultiplePregnancy": 0, "BirthWeight": 1700, "PregnancyWeeks": 32, "AgeMother": 27}
+      },
+      "observed": {"doris": {"reject": false, "code": "KB23.0Z", "warning": "The age is between day 0 and day 6 after birth. Manual check is recommended for perinatal conditions.\n"}, "codedit": {"issueIds": ""}}
+    },
+    {
+      "id": "child",
+      "label": "Example 3 — Child",
+      "purpose": "A short causal chain with sex intentionally omitted to demonstrate an advisory CoDEdit finding.",
+      "certificate": {
+        "ICDVersion": "ICD11",
+        "AdministrativeData": {"EstimatedAge": "P3Y"},
+        "Part1": [
+          {"Conditions": [{"Text": "Dehydration", "Code": "5C70.0", "LinearizationURI": "http://id.who.int/icd/release/11/2026-01/mms/578744597", "Interval": "P1D"}]},
+          {"Conditions": [{"Text": "Acute gastroenteritis", "Code": "1A40.Z", "LinearizationURI": "http://id.who.int/icd/release/11/2026-01/mms/1688127370/unspecified", "Interval": "P3D"}]}
+        ]
+      },
+      "observed": {"doris": {"reject": false, "code": "1A40.Z", "warning": null}, "codedit": {"issueIds": "BER-CE-2"}}
+    },
+    {
+      "id": "maternal",
+      "label": "Example 4 — Maternal",
+      "purpose": "Postpartum causal chain with maternal context; DORIS warns that maternal rules may apply.",
+      "certificate": {
+        "ICDVersion": "ICD11",
+        "AdministrativeData": {"Sex": 2, "EstimatedAge": "P27Y"},
+        "Part1": [
+          {"Conditions": [{"Text": "Postpartum haemorrhage", "Code": "JA43.Z", "LinearizationURI": "http://id.who.int/icd/release/11/2026-01/mms/820245648/unspecified", "Interval": "PT4H"}]},
+          {"Conditions": [{"Text": "Uterine atony", "Code": "JB02.2", "LinearizationURI": "http://id.who.int/icd/release/11/2026-01/mms/1073291850", "Interval": "PT4H"}]}
+        ],
+        "MaternalDeath": {"WasPregnant": 0, "TimeFromPregnancy": 1, "PregnancyContribute": 1}
+      },
+      "observed": {"doris": {"reject": false, "code": "JA43.Z", "warning": "Pregnancy, childbirth, or puerperium is mentioned on the certificate.\nM4 may have been applied.\n"}, "codedit": {"issueIds": ""}}
+    },
+    {
+      "id": "stillbirth",
+      "label": "Example 5 — Stillbirth",
+      "purpose": "Intrapartum stillbirth with no known underlying cause; DORIS requires a manual fetal-death check.",
+      "certificate": {
+        "ICDVersion": "ICD11",
+        "AdministrativeData": {"Sex": 9},
+        "Part1": [
+          {"Conditions": [{"Text": "Intrapartum stillbirth", "Code": "KD3B.1", "LinearizationURI": "http://id.who.int/icd/release/11/2026-01/mms/2034327580", "Interval": "PT"}]}
+        ],
+        "FetalOrInfantDeath": {"Stillborn": 1, "MultiplePregnancy": 0, "BirthWeight": 2800, "PregnancyWeeks": 38, "AgeMother": 29}
+      },
+      "observed": {"doris": {"reject": false, "code": "KD3B.1", "warning": "M1: Manual check is needed see Special instructions on fetal death in the reference guide (2.21.8.4).\nM1: KD3B.1 is not to be used if the underlying cause is known or other specific conditions apply.\n"}, "codedit": {"issueIds": ""}}
+    },
+    {
+      "id": "tuberculosis_mixed",
+      "label": "Example 6 — Tuberculosis mixed expressions",
+      "purpose": "One Part I line with two conditions: a stem plus extension and a separate simple stem. This demonstrates structure, not a validated clinical causal chain.",
+      "certificate": {
+        "ICDVersion": "ICD11",
+        "AdministrativeData": {"Sex": 1, "EstimatedAge": "P44Y"},
+        "Part1": [
+          {"Conditions": [
+            {"Text": "Tuberculous otitis media", "Code": "1B12.2&XA0G74", "LinearizationURI": "http://id.who.int/icd/release/11/2026-01/mms/883140666 & http://id.who.int/icd/release/11/2026-01/mms/1902897114", "Interval": "P14D"},
+            {"Text": "Respiratory tuberculosis, without mention of bacteriological or histological confirmation", "Code": "1B10.Z", "LinearizationURI": "http://id.who.int/icd/release/11/2026-01/mms/882244568/unspecified", "Interval": "P14D"}
+          ]}
+        ]
+      },
+      "observed": {"doris": {"reject": false, "code": "1B10.Z", "warning": null}, "codedit": {"issueIds": ""}}
+    }
+  ]
+}

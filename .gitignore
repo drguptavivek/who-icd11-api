@@ -1,0 +1,7 @@
+/target/
+/runtime/
+/bridge/bin/
+/bridge/obj/
+*.log
+logapi*.txt
+.DS_Store
