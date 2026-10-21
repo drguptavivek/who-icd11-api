@@ -5,7 +5,7 @@ pub mod privacy;
 pub mod processing;
 
 use std::path::PathBuf;
-use std::sync::{Arc, OnceLock};
+use std::sync::{Arc, Mutex, OnceLock};
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -93,6 +93,7 @@ impl Icd11RuntimeConfig {
             .find(|p| p.join("DORIS_v2.1_1.2.0").exists());
 
         if let (Some(bundle_dir), Some(data_dir)) = (bundle_opt, data_opt) {
+            bootstrap::verify_bundle_integrity(&bundle_dir, &data_dir)?;
             return Ok(Self {
                 bundle_dir,
                 data_dir,
@@ -148,6 +149,7 @@ pub struct CodEditEngineOutput {
 }
 
 static GLOBAL_ENGINE: OnceLock<Arc<Icd11Engine>> = OnceLock::new();
+static GLOBAL_ENGINE_INIT_LOCK: Mutex<()> = Mutex::new(());
 
 pub struct Icd11Engine {
     host: DotnetBridgeHost,
@@ -169,6 +171,13 @@ impl Icd11Engine {
         if let Some(engine) = GLOBAL_ENGINE.get() {
             return Ok(Arc::clone(engine));
         }
+        let _guard = GLOBAL_ENGINE_INIT_LOCK
+            .lock()
+            .unwrap_or_else(|e| e.into_inner());
+        if let Some(engine) = GLOBAL_ENGINE.get() {
+            return Ok(Arc::clone(engine));
+        }
+        bootstrap::verify_bundle_integrity(&config.bundle_dir, &config.data_dir)?;
         let (dotnet_root, hostfxr_path) = discover_dotnet_hostfxr()?;
         let host = DotnetBridgeHost::initialize(
             &dotnet_root,

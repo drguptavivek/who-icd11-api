@@ -463,3 +463,40 @@ fn test_live_in_process_who_icd11_and_doris_dll_engine() {
         .unwrap_err();
     assert!(matches!(pii_err, Icd11Error::PiiBoundaryViolation { .. }));
 }
+
+#[test]
+fn test_sha256_pinned_bundle_integrity_and_tamper_detection() {
+    use who_icd11_api::bootstrap::{
+        PINNED_DLL_SHA256, PINNED_DORIS_FILES_SHA256, verify_bundle_integrity, verify_file_sha256,
+    };
+
+    assert_eq!(PINNED_DLL_SHA256.len(), 79);
+    assert_eq!(PINNED_DORIS_FILES_SHA256.len(), 7);
+
+    // Ensure the engine bundle exists and verify all 79 DLLs + 10 WHO data files via Rust sha2::Sha256
+    let _engine = Icd11Engine::global().expect("initialize in-process WHO ICD-11 + DORIS DLLs");
+    let bridge_dll = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("bridge/DigitvaIcd11Bridge.dll");
+    verify_file_sha256(
+        &bridge_dll,
+        "1783241ff66b061c4a15eeae66a07d29f4391848b6dce844859f807a3d850953",
+    )
+    .expect("embedded DigitvaIcd11Bridge.dll matches pinned SHA-256");
+
+    // Verify tamper detection rejects wrong SHA-256
+    let tamper_err = verify_file_sha256(
+        &bridge_dll,
+        "0000000000000000000000000000000000000000000000000000000000000000",
+    )
+    .unwrap_err();
+    assert!(tamper_err.to_string().contains("SHA-256 mismatch"));
+
+    let workspace_bundle = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../../desktop/target/icd11-runtime");
+    if workspace_bundle.join("icdapi").exists() && workspace_bundle.join("data").exists() {
+        verify_bundle_integrity(
+            &workspace_bundle.join("icdapi"),
+            &workspace_bundle.join("data"),
+        )
+        .expect("all 79 DLLs and 10 offline WHO data files match pinned SHA-256");
+    }
+}
