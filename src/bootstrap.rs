@@ -139,6 +139,13 @@ pub const PINNED_DLL_SHA256: &[(&str, &str)] = &[
     ("protobuf-net.dll", "2073cfbd2736181bec88cd409628dd1425fe54c3d2559b0ffc92ce7a752d5e8b"),
 ];
 
+/// `ICD-API.dll` as shipped in the pinned `linux/amd64` layer (`OCI_ICDAPI_LAYER_SHA256`), which
+/// is what `extract_portable_icdapi_from_oci` installs. WHO compiles it per architecture
+/// (ReadyToRun), so it differs from the `linux/arm64` image's copy pinned in `PINNED_DLL_SHA256`;
+/// both are unmodified WHO 2.6.0 builds and either is accepted (digitva-ke83.12).
+pub const OCI_LINUX_AMD64_ICD_API_DLL_SHA256: &str =
+    "8a901c52c9f396bb8cfb1d39f0ce070734a897a7e67f3f1467ba53fb872279a7";
+
 /// Pinned SHA-256 digests of all 7 immutable DORIS `v2.1_1.2.0` rule & mapping files inside
 /// `data/DORIS_v2.1_1.2.0/` (`log.txt` is excluded because `DorisRuleEngine.dll` writes to it at runtime).
 pub const PINNED_DORIS_FILES_SHA256: &[(&str, &str)] = &[
@@ -180,7 +187,13 @@ pub fn ensure_runtime_bundle(target_root: &Path) -> Result<(PathBuf, PathBuf), I
 /// WHO offline `2026-01_en` / `DORIS_v2.1_1.2.0` files in `dst_icdapi` and `dst_data`.
 pub fn verify_bundle_integrity(dst_icdapi: &Path, dst_data: &Path) -> Result<(), Icd11Error> {
     for (dll_name, expected_sha256) in PINNED_DLL_SHA256 {
-        verify_file_sha256(&dst_icdapi.join(dll_name), expected_sha256)?;
+        let path = dst_icdapi.join(dll_name);
+        if *dll_name == "ICD-API.dll"
+            && verify_file_sha256(&path, OCI_LINUX_AMD64_ICD_API_DLL_SHA256).is_ok()
+        {
+            continue;
+        }
+        verify_file_sha256(&path, expected_sha256)?;
     }
     verify_file_sha256(
         &dst_data.join("icd11_2026-01-17_release-icf-mms_en.pbf.gz"),

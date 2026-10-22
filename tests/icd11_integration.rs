@@ -500,3 +500,36 @@ fn test_sha256_pinned_bundle_integrity_and_tamper_detection() {
         .expect("all 79 DLLs and 10 offline WHO data files match pinned SHA-256");
     }
 }
+
+/// The `linux/amd64` `ICD-API.dll` alternative (digitva-ke83.12) must not weaken the pin:
+/// any other bytes in `ICD-API.dll` still fail. Needs a local bundle (env dirs); skips otherwise.
+#[cfg(unix)]
+#[test]
+fn test_icd_api_dll_alternative_pin_still_rejects_tampering() {
+    use who_icd11_api::bootstrap::verify_bundle_integrity;
+
+    let (Ok(bundle), Ok(data)) = (
+        std::env::var("DIGITVA_ICD11_BUNDLE_DIR"),
+        std::env::var("DIGITVA_ICD11_DATA_DIR"),
+    ) else {
+        return;
+    };
+    let tmp = std::env::temp_dir().join(format!("icd11-pin-{}", std::process::id()));
+    std::fs::create_dir_all(&tmp).unwrap();
+    for entry in std::fs::read_dir(&bundle).unwrap().flatten() {
+        let name = entry.file_name();
+        if name.to_string_lossy().ends_with(".dll") && name != "ICD-API.dll" {
+            std::os::unix::fs::symlink(entry.path(), tmp.join(&name)).unwrap();
+        }
+    }
+    let original = std::fs::read(PathBuf::from(&bundle).join("ICD-API.dll")).unwrap();
+    std::fs::write(tmp.join("ICD-API.dll"), &original).unwrap();
+    verify_bundle_integrity(&tmp, data.as_ref()).expect("pinned ICD-API.dll accepted");
+
+    let mut tampered = original;
+    tampered[0] ^= 0xff;
+    std::fs::write(tmp.join("ICD-API.dll"), &tampered).unwrap();
+    let err = verify_bundle_integrity(&tmp, data.as_ref()).unwrap_err();
+    assert!(err.to_string().contains("ICD-API.dll"), "{err}");
+    std::fs::remove_dir_all(&tmp).unwrap();
+}
