@@ -42,8 +42,7 @@ fn main() -> anyhow::Result<()> {
     }
 
     if bootstrap_only {
-        let target = output_dir
-            .unwrap_or_else(|| PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("runtime"));
+        let target = output_dir.unwrap_or_else(who_icd11_api::default_runtime_dir);
         let (icdapi_dir, data_dir) = ensure_runtime_bundle(&target)?;
         println!(
             "Bootstrapped WHO ICD-11 2.6.0 + DORIS 1.2.0 runtime (zero Docker):\n  bundle: {}\n  data:   {}",

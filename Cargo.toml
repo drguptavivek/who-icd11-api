@@ -2,10 +2,26 @@
 name = "who-icd11-api"
 version = "0.1.0"
 edition = "2024"
+rust-version = "1.88"
 license = "MIT"
 authors = ["Vivek Gupta <drguptavivek>"]
 repository = "https://github.com/drguptavivek/who-icd11-api"
-description = "Native Rust in-process DLL host, pure-Rust OCI/CDN bootstrapper, and zero-Docker server for WHO ICD-11 API 2.6.0 & DORIS 1.2.0"
+description = "In-process host and offline server for the WHO ICD-11 API 2.6.0, DORIS 1.2.0 and CoDEdit; fetches WHO's files itself, redistributes none"
+readme = "README.md"
+homepage = "https://github.com/drguptavivek/who-icd11-api"
+keywords = ["icd-11", "who", "mortality", "death-certificate", "doris"]
+categories = ["api-bindings", "command-line-utilities", "science"]
+include = [
+    "/src/**",
+    "/bridge/Bridge.cs",
+    "/bridge/DigitvaIcd11Bridge.csproj",
+    "/bridge/DigitvaIcd11Bridge.dll",
+    "/Cargo.toml",
+    "/Cargo.lock",
+    "/README.md",
+    "/LICENSE",
+    "/NOTICE",
+]
 
 [lib]
 name = "who_icd11_api"

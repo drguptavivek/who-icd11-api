@@ -66,17 +66,21 @@ impl Icd11RuntimeConfig {
     pub fn discover_with_bind(bind_url: impl Into<String>) -> Result<Self, Icd11Error> {
         let bind_url = bind_url.into();
         let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        let cwd_runtime = default_runtime_dir();
+        // A checkout's own bundle, for tests and wrappers run from other directories.
         let crate_runtime = manifest_dir.join("runtime");
         let desktop_runtime = manifest_dir.join("../../desktop/target/icd11-runtime");
 
         let bundle_candidates = [
             std::env::var("DIGITVA_ICD11_BUNDLE_DIR").ok().map(PathBuf::from),
+            Some(cwd_runtime.join("icdapi")),
             Some(crate_runtime.join("icdapi")),
             Some(desktop_runtime.join("icdapi")),
             Some(PathBuf::from("/tmp/icdapi_portable")),
         ];
         let data_candidates = [
             std::env::var("DIGITVA_ICD11_DATA_DIR").ok().map(PathBuf::from),
+            Some(cwd_runtime.join("data")),
             Some(crate_runtime.join("data")),
             Some(desktop_runtime.join("data")),
             Some(PathBuf::from("/tmp/icdapi_bundle/data")),
@@ -102,8 +106,8 @@ impl Icd11RuntimeConfig {
             });
         }
 
-        // Pure-Rust zero-Docker bootstrap into `<crate>/runtime`
-        let (bundle_dir, data_dir) = ensure_runtime_bundle(&crate_runtime)?;
+        // Pure-Rust zero-Docker bootstrap into the default runtime directory
+        let (bundle_dir, data_dir) = ensure_runtime_bundle(&cwd_runtime)?;
         Ok(Self {
             bundle_dir,
             data_dir,
@@ -111,6 +115,14 @@ impl Icd11RuntimeConfig {
             default_release: DEFAULT_ICD11_RELEASE.to_string(),
         })
     }
+}
+
+/// `./runtime` in the working directory. Not the crate's own directory: a released binary would
+/// point at the build machine, and a `cargo install`ed one into cargo's source cache.
+pub fn default_runtime_dir() -> PathBuf {
+    std::env::current_dir()
+        .unwrap_or_default()
+        .join("runtime")
 }
 
 #[derive(Debug, Clone, Default)]

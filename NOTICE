@@ -1,0 +1,31 @@
+who-icd11-api
+Copyright (c) 2026 Vivek Gupta. Licensed under the MIT License (see LICENSE).
+
+What this repository and its release archives contain
+  Only this project's own code and its own pre-compiled bridge assembly
+  (bridge/DigitvaIcd11Bridge.dll, built from bridge/Bridge.cs, embedded in the
+  binary). They contain no WHO assemblies and no WHO data. WHO has not given
+  this project written permission to redistribute either.
+
+What is downloaded, and from where
+  When you run `who-icd11-server --bootstrap`, your machine downloads, directly
+  from WHO's own sources and verified against SHA-256 digests pinned in
+  src/bootstrap.rs:
+    - the ICD-API 2.6.0 and DORIS 1.2.0 .NET assemblies, from the Docker Hub
+      image whoicd/icd-api:2.6.0;
+    - the ICD-11 2026-01 (English) release and search-index files, from
+      icdcdn.who.int;
+    - the DORIS 1.2.0 rule files, from icd11files.blob.core.windows.net.
+  Those files are not part of this project. Use of them is governed by WHO's
+  terms, not by this project's MIT licence.
+
+WHO content and trademarks
+  ICD-11 content is licensed by WHO under Creative Commons
+  Attribution-NoDerivatives 3.0 IGO (CC BY-ND 3.0 IGO) and keeps WHO's
+  attribution. ICD-API, DORIS and CoDEdit are WHO's. tests/fixtures (git repository only)
+  contains example death certificates used as test inputs; any ICD-11 codes and titles in
+  them remain WHO's.
+
+No endorsement
+  This project is independent. It is not endorsed by, affiliated with, or
+  supported by the World Health Organization.
